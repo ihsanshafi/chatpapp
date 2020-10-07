@@ -4,8 +4,6 @@ from socket import socket as SOCKET
 from threading import Thread
 import tkinter
 from tkinter import messagebox
-import sys
-import os
 import socket
 top = tkinter.Tk()
 top.title("Chatter")
@@ -55,18 +53,18 @@ def on_closing(event=None):
     send()
 def Quit(event=None):
     msg=messagebox.askyesno(title="exit",message="do you really want to exit?")
-    if msg is not 1:
-        #quit()
-        #sys.exit()
+    if msg > 0:
         top.destroy()
+        return
 
 
-entry_field = tkinter.Entry(top, textvariable=my_msg,width=50)
+entry_field = tkinter.Entry(top, textvariable=my_msg,width=110)
 entry_field.bind("<Return>", send)
+#entry_field.grid(column=0,row=0)
 entry_field.pack()
-send_button = tkinter.Button(top, text="Send", command=send,width=30,bg="light blue")#.grid(column=0,row=0)
+send_button = tkinter.Button(top, text="Send", command=send,width=100,bg="light blue")#.grid(column=0,row=0)
 send_button.pack()
-exit_btn = tkinter.Button(top,text="exit", command=Quit)
+exit_btn = tkinter.Button(top,text="exit", command=Quit,width=100)
 exit_btn.pack()
 top.protocol("WM_DELETE_WINDOW", on_closing)
 

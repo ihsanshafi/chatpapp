@@ -1,0 +1,74 @@
+
+from socket import AF_INET,  SOCK_STREAM
+from socket import socket as SOCKET
+from threading import Thread
+import tkinter
+from tkinter import messagebox
+import socket
+top = tkinter.Tk()
+top.title("Chatter")
+top.iconbitmap("hnet.com-image.ico")
+messages_frame = tkinter.Frame(top)
+my_msg = tkinter.StringVar()  # For the messages to be sent.
+my_msg.set("Type your messages here.")
+scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
+
+msg_list = tkinter.Listbox(messages_frame, height=20, width=100, yscrollcommand=scrollbar.set,bg="light blue")
+scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+msg_list.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
+
+msg_list.pack()
+messages_frame.pack()
+
+HOST = socket.gethostbyname(socket.gethostname())
+PORT = 33000
+if not PORT:
+    PORT = 33000  # Default value.
+else:
+    PORT = int(PORT)
+BUFSIZ = 1024
+ADDR = (HOST, PORT)
+client_socket = SOCKET(AF_INET, SOCK_STREAM)
+client_socket.connect(ADDR)
+
+def receive():
+    """Handles receiving of messages."""
+    while True:
+        try:
+            msg = client_socket.recv(BUFSIZ).decode("utf8")
+            msg_list.insert(tkinter.END, msg)
+        except OSError:  # Possibly client has left the chat.
+            break
+
+def send(event=None):  # event is passed by binders.
+    """Handles sending of messages."""
+    msg = my_msg.get()
+    my_msg.set("")  # Clears input field.
+    client_socket.send(bytes(msg, "utf8"))
+    if msg == "{quit}":
+        client_socket.close()
+        top.quit()
+
+def on_closing(event=None):
+    my_msg.set("{quit}")
+    send()
+def Quit(event=None):
+    msg=messagebox.askyesno(title="exit",message="do you really want to exit?")
+    if msg > 0:
+        top.destroy()
+        return
+
+
+entry_field = tkinter.Entry(top, textvariable=my_msg,width=110)
+entry_field.bind("<Return>", send)
+#entry_field.grid(column=0,row=0)
+entry_field.pack()
+send_button = tkinter.Button(top, text="Send", command=send,width=100,bg="light blue")#.grid(column=0,row=0)
+send_button.pack()
+exit_btn = tkinter.Button(top,text="exit", command=Quit,width=100)
+exit_btn.pack()
+top.protocol("WM_DELETE_WINDOW", on_closing)
+
+receive_thread = Thread(target=receive)
+receive_thread.start()
+tkinter.mainloop()
